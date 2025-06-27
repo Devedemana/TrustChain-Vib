@@ -11,7 +11,8 @@
     "test:frontend": "vitest src/",
     "test:backend": "vitest tests/",
     "test:watch": "vitest --watch",
-    "serve": "webpack serve --mode development --open"
+    "serve": "webpack serve --mode development --open",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@dfinity/agent": "^2.4.1",

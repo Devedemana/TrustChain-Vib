@@ -1,6 +1,13 @@
-# TrustChain - Decentralized Academic Credential Verifier
+# 🔗 TrustChain - Modern Decentralized Academic Credential Verifier
 
-� **Vibathon: Web3 x AI Edition - Hackathon Project**
+![TrustChain](https://img.shields.io/badge/TrustChain-Modern%20Blockchain%20App-4ECDC4?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Material-UI](https://img.shields.io/badge/Material--UI-v5-0081CB?style=for-the-badge&logo=material-ui&logoColor=white)
+
+✨ **A stunning, modern blockchain application with advanced animations and glassmorphism design**
+
+🌟 **Vibathon: Web3 x AI Edition - Hackathon Project**
 TrustChain is a comprehensive decentralized application built on the Internet Computer (IC) blockchain that enables secure issuance, storage, and verification of academic credentials. The system eliminates the need for forged diplomas and simplifies the verification process through blockchain technology.
 
 ## 🏗️ Architecture
