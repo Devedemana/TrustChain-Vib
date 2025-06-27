@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "canisters": {
+    "trustchain_backend": {
+      "type": "motoko",
+      "main": "src/trustchain_backend/main.mo"
+    },
+    "trustchain_frontend": {
+      "type": "assets",
+      "source": ["dist/"]
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    }
+  }
+}
