@@ -308,7 +308,7 @@ function App() {
                 background: 'linear-gradient(45deg, #FE6B8B, #FF8E53)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
-                color: 'transparent'
+                color: 'opaque'
               }}
             >
               TrustChain

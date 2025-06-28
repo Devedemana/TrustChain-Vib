@@ -42,7 +42,7 @@ import {
 import { Principal } from '@dfinity/principal';
 import { Identity } from '@dfinity/agent';
 import { Credential, CredentialMetadata } from '../types';
-import { mockTrustChainService } from '../utils/mockData';
+import { getTrustChainService } from '../services/serviceSelector';
 import CredentialQRGenerator from './CredentialQRGenerator';
 
 interface StudentDashboardProps {
@@ -86,6 +86,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
   const [error, setError] = useState<string | null>(null);
   const [selectedCredentialForQR, setSelectedCredentialForQR] = useState<string>('');
 
+  const trustChainService = getTrustChainService();
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -97,7 +99,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
     setError(null);
     
     try {
-      const response = await mockTrustChainService.getStudentCredentials(studentId);
+      const response = await trustChainService.getStudentCredentials(studentId);
       if (response.success && response.data) {
         setCredentials(response.data);
       } else {
