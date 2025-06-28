@@ -53,10 +53,12 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
     ],
-  },
-  plugins: [
+  },  plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
@@ -70,10 +72,12 @@ module.exports = {
       'process.env.REACT_APP_NAME': JSON.stringify(process.env.REACT_APP_NAME || 'TrustChain'),
       'process.env.REACT_APP_VERSION': JSON.stringify(process.env.REACT_APP_VERSION || '1.0.0'),
     }),
-  ],
-  devServer: {
+  ],  devServer: {
     static: './dist',
     hot: true,
-    port: 3000,
+    port: 8080,
+    historyApiFallback: true,
+    open: true,
+    compress: true,
   },
 };

@@ -12,36 +12,53 @@ export interface TrustChainActor {
     metadata: string
   ) => Promise<{ Ok?: Credential; Err?: string }>;
   
-  verifyCredential: (credentialId: string) => Promise<VerificationResult>;
+  verifyCredential: (credentialId: string) => Promise<{
+    isValid: boolean;
+    credential?: Credential;
+    message: string;
+  }>;
   
   getStudentCredentials: (studentId: string) => Promise<Credential[]>;
   
   authorizeInstitution: (institution: string) => Promise<{ Ok?: null; Err?: string }>;
   
   isAuthorizedInstitution: (institution: string) => Promise<boolean>;
+  
+  getAuthorizedInstitutions: () => Promise<string[]>;
+  
+  getSystemInfo: () => Promise<string>;
 }
 
 // Canister ID - this will be set after deployment
 const CANISTER_ID = process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'uxrrr-q7777-77774-qaaaq-cai';
 
 // Create the agent for local development
-const agent = new HttpAgent({
-  host: process.env.DFX_NETWORK === 'local' ? 'http://127.0.0.1:4943' : 'https://ic0.app',
-});
+const createAgent = () => {
+  const host = process.env.DFX_NETWORK === 'local' 
+    ? 'http://127.0.0.1:4943' 
+    : 'https://ic0.app';
+    
+  console.log('Creating IC agent with host:', host);
+  
+  const agent = new HttpAgent({ host });
 
-// For local development, fetch the root key
-if (process.env.DFX_NETWORK === 'local') {
-  agent.fetchRootKey().catch(err => {
-    console.warn('Unable to fetch root key. Check if the local replica is running.');
-    console.error(err);
-  });
-}
+  // For local development, fetch the root key
+  if (process.env.DFX_NETWORK === 'local') {
+    agent.fetchRootKey().catch(err => {
+      console.warn('Unable to fetch root key. Check if the local replica is running.');
+      console.error(err);
+    });
+  }
+  
+  return agent;
+};
+
+const agent = createAgent();
 
 // Create the actor
 export const createActor = (): TrustChainActor => {
   return Actor.createActor<TrustChainActor>(
-    ({ IDL }) => {
-      const Credential = IDL.Record({
+    ({ IDL }) => {      const Credential = IDL.Record({
         id: IDL.Text,
         studentId: IDL.Text,
         institution: IDL.Text,
@@ -78,6 +95,8 @@ export const createActor = (): TrustChainActor => {
         getStudentCredentials: IDL.Func([IDL.Text], [IDL.Vec(Credential)], ['query']),
         authorizeInstitution: IDL.Func([IDL.Text], [Result], []),
         isAuthorizedInstitution: IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+        getAuthorizedInstitutions: IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+        getSystemInfo: IDL.Func([], [IDL.Text], ['query']),
       });
     },
     {
@@ -94,7 +113,6 @@ export class TrustChainService {
   constructor() {
     this.actor = createActor();
   }
-
   async issueCredential(
     studentId: string,
     institution: string,
@@ -103,6 +121,8 @@ export class TrustChainService {
     metadata: object
   ): Promise<ApiResponse<Credential>> {
     try {
+      console.log('Issuing credential:', { studentId, institution, credentialType, title });
+      
       const result = await this.actor.issueCredential(
         studentId,
         institution,
@@ -112,13 +132,24 @@ export class TrustChainService {
       );
 
       if ('Ok' in result) {
+        console.log('Credential issued successfully:', result.Ok);
         return { success: true, data: result.Ok };
       } else {
+        console.error('Credential issuance failed:', result.Err);
         return { success: false, error: result.Err };
       }
     } catch (error) {
       console.error('Error issuing credential:', error);
-      return { success: false, error: 'Failed to issue credential' };
+      
+      // Check for specific IC errors
+      if (error instanceof Error && error.message.includes('certificate verification failed')) {
+        return { 
+          success: false, 
+          error: 'Authentication failed. Please check if the local IC replica is running and properly configured.' 
+        };
+      }
+      
+      return { success: false, error: `Failed to issue credential: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
 

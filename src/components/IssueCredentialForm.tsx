@@ -13,44 +13,12 @@ import SendIcon from '@mui/icons-material/Send';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Principal } from '@dfinity/principal';
 import { Identity } from '@dfinity/agent';
-import { Actor, HttpAgent } from '@dfinity/agent';
+import { getTrustChainService } from '../services/serviceSelector';
 
 interface IssueCredentialFormProps {
   principal: Principal | null;
   identity: Identity | null;
 }
-
-// Define the canister interface for issueCredential
-const createTrustChainActor = (identity: Identity) => {
-  const agent = new HttpAgent({
-    host: process.env.DFX_NETWORK === 'local' ? 'http://127.0.0.1:4943' : 'https://ic0.app',
-    identity,
-  });
-
-  // For local development, fetch the root key
-  if (process.env.DFX_NETWORK === 'local') {
-    agent.fetchRootKey().catch(err => {
-      console.warn('Unable to fetch root key. Check if the local replica is running.');
-    });
-  }
-
-  return Actor.createActor(
-    ({ IDL }) => {
-      const Result = IDL.Variant({
-        Ok: IDL.Text,
-        Err: IDL.Text,
-      });
-
-      return IDL.Service({
-        issueCredential: IDL.Func([IDL.Principal, IDL.Text], [Result], []),
-      });
-    },
-    {
-      agent,
-      canisterId: process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'uxrrr-q7777-77774-qaaaq-cai',
-    }
-  );
-};
 
 const IssueCredentialForm: React.FC<IssueCredentialFormProps> = ({ principal, identity }) => {
   const [metadata, setMetadata] = useState('');
@@ -73,25 +41,36 @@ const IssueCredentialForm: React.FC<IssueCredentialFormProps> = ({ principal, id
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    setResult(null);    try {
+      // Use the service selector to get the appropriate service (mock or real)
+      const trustChainService = getTrustChainService();
+      
+      // Parse metadata as JSON to validate it
+      let parsedMetadata;
+      try {
+        parsedMetadata = JSON.parse(metadata.trim());
+      } catch (parseError) {
+        setError('Invalid JSON format in metadata');
+        setLoading(false);
+        return;
+      }
 
-    try {
-      // Create actor with authenticated identity
-      const actor = createTrustChainActor(identity);
+      // Issue credential using the service
+      const response = await trustChainService.issueCredential(
+        principal.toText(),
+        'TrustChain Institution', // Default institution name
+        'certificate', // Default credential type
+        'Academic Credential', // Default title
+        parsedMetadata
+      );
 
-      // Call the canister's issueCredential function
-      const response = await actor.issueCredential(principal, metadata.trim()) as any;
-
-      // Handle the Result type response
-      if (response && 'Ok' in response) {
-        setResult(response.Ok as string);
+      if (response.success && response.data) {
+        setResult(response.data.id);
         setMetadata(''); // Clear form on success
-        console.log('Credential issued successfully:', response.Ok);
-      } else if (response && 'Err' in response) {
-        setError(response.Err as string);
-        console.error('Error issuing credential:', response.Err);
+        console.log('Credential issued successfully:', response.data);
       } else {
-        setError('Unexpected response format from canister');
+        setError(response.error || 'Failed to issue credential');
+        console.error('Error issuing credential:', response.error);
       }
     } catch (error) {
       console.error('Network error:', error);

@@ -18,33 +18,7 @@ import {
   Cancel
 } from '@mui/icons-material';
 import jsQR from 'jsqr';
-import { Actor, HttpAgent } from '@dfinity/agent';
-
-// Define the canister interface for verifyCredential
-const createTrustChainActor = () => {
-  const agent = new HttpAgent({
-    host: process.env.DFX_NETWORK === 'local' ? 'http://127.0.0.1:4943' : 'https://ic0.app',
-  });
-
-  // For local development, fetch the root key
-  if (process.env.DFX_NETWORK === 'local') {
-    agent.fetchRootKey().catch(err => {
-      console.warn('Unable to fetch root key. Check if the local replica is running.');
-    });
-  }
-
-  return Actor.createActor(
-    ({ IDL }) => {
-      return IDL.Service({
-        verifyCredential: IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], ['query']),
-      });
-    },
-    {
-      agent,
-      canisterId: process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'uxrrr-q7777-77774-qaaaq-cai',
-    }
-  );
-};
+import { getTrustChainService } from '../services/serviceSelector';
 
 interface VerificationResult {
   found: boolean;
@@ -98,9 +72,7 @@ const VerifyCredentialScanner: React.FC = () => {
     }
     setScanning(false);
     setLastScannedCode('');
-  };
-
-  // Verify credential with the canister
+  };  // Verify credential with the service
   const verifyCredential = async (credentialId: string) => {
     if (credentialId === lastScannedCode) {
       return; // Prevent duplicate scans
@@ -111,24 +83,25 @@ const VerifyCredentialScanner: React.FC = () => {
     setError(null);
 
     try {
-      const actor = createTrustChainActor();
-      const response = await actor.verifyCredential(credentialId) as any;
+      const service = getTrustChainService();
+      const response = await service.verifyCredential(credentialId);
 
-      if (response && Array.isArray(response) && response.length > 0 && response[0]) {
-        // Credential found
+      if (response.success && response.data && response.data.isValid) {
+        // Credential found and valid
         setResult({
           found: true,
           credentialId,
-          metadata: response[0] as string
+          metadata: response.data.credential ? JSON.stringify(response.data.credential) : undefined
         });
         console.log('Credential verified:', credentialId);
       } else {
-        // Credential not found
+        // Credential not found or invalid
         setResult({
           found: false,
           credentialId
         });
-        console.log('Credential not found:', credentialId);
+        const message = response.data?.message || 'Credential not found';
+        console.log('Credential not found or invalid:', credentialId, message);
       }
     } catch (error) {
       console.error('Error verifying credential:', error);
