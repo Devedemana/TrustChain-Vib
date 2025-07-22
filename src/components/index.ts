@@ -1,6 +1,7 @@
 // Component exports
 export { default as HomePage } from './HomePage';
 export { default as StudentDashboard } from './StudentDashboard';
+export { default as EnhancedStudentDashboard } from './EnhancedStudentDashboard';
 export { default as InstitutionDashboard } from './InstitutionDashboard';
 export { default as VerifyCredential } from './VerifyCredential';
 export { default as Navigation } from './Navigation';
@@ -10,3 +11,11 @@ export { default as VerifyCredentialScanner } from './VerifyCredentialScanner';
 export { default as CredentialQRGenerator } from './CredentialQRGenerator';
 export { default as NFTBadgeMinter } from './NFTBadgeMinter';
 export { default as CSVUploadProcessor } from './CSVUploadProcessor';
+export { AdvancedAnalyticsDashboard } from './AdvancedAnalyticsDashboard';
+export { Credential3DViewer } from './Credential3DViewer';
+export { default as MobileLayout } from './MobileLayout';
+export { default as EnhancedDashboardContent } from './EnhancedDashboardContent';
+export { default as CareerInsights } from './CareerInsights';
+export { default as SocialLearning } from './SocialLearning';
+export { default as SmartLearningRecommendations } from './SmartLearningRecommendations';
+export { default as SkillAssessment } from './SkillAssessment';

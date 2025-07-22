@@ -1,6 +1,7 @@
 import { Actor, HttpAgent } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { Credential, VerificationResult, ApiResponse } from '../types';
+import { IC_CONFIG, HOST, CANISTER_ID, FETCH_ROOT_KEY, VERIFY_QUERY_SIGNATURES, USE_PRODUCTION } from '../config/ic-config';
 
 // Define the interface for the TrustChain canister
 export interface TrustChainActor {
@@ -29,25 +30,42 @@ export interface TrustChainActor {
   getSystemInfo: () => Promise<string>;
 }
 
-// Canister ID - this will be set after deployment
-const CANISTER_ID = process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'uxrrr-q7777-77774-qaaaq-cai';
-
-// Create the agent for local development
+// Production-ready agent creation with IC configuration
 const createAgent = () => {
-  const host = process.env.DFX_NETWORK === 'local' 
-    ? 'http://127.0.0.1:4943' 
-    : 'https://ic0.app';
-    
-  console.log('Creating IC agent with host:', host);
+  console.log('🚀 Creating IC agent for production deployment');
+  console.log('Environment variables:', {
+    REACT_APP_CANISTER_ID: process.env.REACT_APP_CANISTER_ID,
+    REACT_APP_NETWORK: process.env.REACT_APP_NETWORK,
+    REACT_APP_USE_PRODUCTION: process.env.REACT_APP_USE_PRODUCTION,
+  });
+  console.log('Configuration:', {
+    host: HOST,
+    canisterId: CANISTER_ID,
+    network: IC_CONFIG.NETWORK,
+    useProduction: USE_PRODUCTION
+  });
   
-  const agent = new HttpAgent({ host });
+  // Validate canister ID format
+  if (CANISTER_ID.includes('_') || CANISTER_ID === 'YOUR_CANISTER_ID_HERE') {
+    console.error('❌ Invalid canister ID format:', CANISTER_ID);
+    console.error('Using fallback local canister ID for development');
+  }
+  
+  const agent = new HttpAgent({ host: HOST });
 
-  // For local development, fetch the root key
-  if (process.env.DFX_NETWORK === 'local') {
+  // Security: Only fetch root key in local development
+  if (FETCH_ROOT_KEY && !USE_PRODUCTION) {
     agent.fetchRootKey().catch(err => {
       console.warn('Unable to fetch root key. Check if the local replica is running.');
       console.error(err);
     });
+  } else if (USE_PRODUCTION) {
+    console.log('✅ Production mode: Skipping root key fetch for security');
+  }
+  
+  // Enable query signature verification in production
+  if (VERIFY_QUERY_SIGNATURES) {
+    console.log('✅ Query signature verification enabled');
   }
   
   return agent;

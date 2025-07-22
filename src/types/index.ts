@@ -5,7 +5,7 @@ export interface Credential {
   id: string;
   studentId: string;
   institution: string;
-  credentialType: 'transcript' | 'certificate' | 'badge';
+  credentialType: string; // Made flexible to accommodate various types
   title: string;
   issueDate: number; // Unix timestamp
   verificationHash: string;

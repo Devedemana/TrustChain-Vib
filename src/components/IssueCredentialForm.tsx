@@ -69,8 +69,10 @@ const IssueCredentialForm: React.FC<IssueCredentialFormProps> = ({ principal, id
         setMetadata(''); // Clear form on success
         console.log('Credential issued successfully:', response.data);
       } else {
-        setError(response.error || 'Failed to issue credential');
-        console.error('Error issuing credential:', response.error);
+        // Handle both ApiResponse<Credential> and mock service response types
+        const errorMessage = 'error' in response ? response.error : 'Failed to issue credential';
+        setError(errorMessage || 'Failed to issue credential');
+        console.error('Error issuing credential:', 'error' in response ? response.error : 'Unknown error');
       }
     } catch (error) {
       console.error('Network error:', error);

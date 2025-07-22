@@ -2,10 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="TrustChain - Decentralized Academic Credential Verifier" />
-    <title>TrustChain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    
+    <!-- PWA Theme Colors -->
+    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#667eea" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e3c72" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="AI-powered blockchain credential verification platform for academic institutions and students" />
+    <meta name="keywords" content="blockchain, credentials, academic, verification, Web3, Internet Computer, AI" />
+    <meta name="author" content="TrustChain Team" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192x192.png" />
+    
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TrustChain" />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TrustChain - Decentralized Academic Credentials" />
+    <meta property="og:description" content="AI-powered blockchain credential verification platform" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:url" content="https://trustchain-vib.io" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TrustChain" />
+    <meta name="twitter:description" content="AI-powered blockchain credential verification" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="//identity.ic0.app" />
+    
+    <title>TrustChain - Decentralized Academic Credentials</title>
+    
+    <!-- Critical CSS -->
     <style>
         body {
             margin: 0;
@@ -16,15 +63,82 @@
             -moz-osx-font-smoothing: grayscale;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         #root {
             min-height: 100vh;
         }
+        
+        /* Loading screen */
+        .app-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Hide loading once app loads */
+        .app-loaded .app-loading {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+        <div style="text-align: center; padding: 50px; color: white;">
+            <h1>JavaScript Required</h1>
+            <p>TrustChain requires JavaScript to run. Please enable JavaScript in your browser.</p>
+        </div>
+    </noscript>
+    
+    <!-- Loading Screen -->
+    <div class="app-loading">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <div id="root"></div>
+    
+    <!-- PWA Installation Script -->
+    <script>
+        // Remove loading screen once app loads
+        window.addEventListener('load', () => {
+            document.body.classList.add('app-loaded');
+        });
+        
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

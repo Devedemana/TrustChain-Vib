@@ -26,7 +26,17 @@ import {
   Avatar,
   Fade,
   Grid,
-  Container
+  Container,
+  Badge,
+  LinearProgress,
+  Tooltip,
+  Divider,
+  Stack,
+  Switch,
+  FormControlLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
 import { 
   Visibility, 
@@ -37,13 +47,45 @@ import {
   EmojiEvents,
   Verified,
   Security,
-  CloudDownload
+  CloudDownload,
+  Timeline,
+  Analytics,
+  TrendingUp,
+  School,
+  Work,
+  Star,
+  Shield,
+  AttachMoney,
+  ExpandMore,
+  NotificationsActive,
+  Speed,
+  Language,
+  Share as ShareIcon,
+  LinkedIn,
+  Twitter,
+  Facebook,
+  Email,
+  People,
+  Psychology,
+  Quiz
 } from '@mui/icons-material';
+import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
+import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import { Principal } from '@dfinity/principal';
 import { Identity } from '@dfinity/agent';
 import { Credential, CredentialMetadata } from '../types';
 import { getTrustChainService } from '../services/serviceSelector';
 import CredentialQRGenerator from './CredentialQRGenerator';
+import EnhancedDashboardContent from './EnhancedDashboardContent';
+import CareerInsights from './CareerInsights';
+import SocialLearning from './SocialLearning';
+import SmartLearningRecommendations from './SmartLearningRecommendations';
+import SkillAssessment from './SkillAssessment';
+import { notificationService } from '../services/notifications';
+import { fraudDetectionService } from '../services/fraudDetection';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, ChartTooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement);
 
 interface StudentDashboardProps {
   principal: Principal | null;
@@ -84,12 +126,98 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCredentialForQR, setSelectedCredentialForQR] = useState<string>('');
+  const [selectedCredentialForQR, setSelectedCredentialForQR] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [profileCompleteness, setProfileCompleteness] = useState(0);
+  const [skillsData, setSkillsData] = useState<any>({});
+  const [careerInsights, setCareerInsights] = useState<any[]>([]);
+  const [industryDemand, setIndustryDemand] = useState<any[]>([]);
+  const [socialSharing, setSocialSharing] = useState(false);
 
   const trustChainService = getTrustChainService();
 
+  // Enhanced analytics data
+  const credentialsByType = credentials.reduce((acc: any, cred) => {
+    acc[cred.credentialType] = (acc[cred.credentialType] || 0) + 1;
+    return acc;
+  }, {});
+
+  const credentialChartData = {
+    labels: Object.keys(credentialsByType),
+    datasets: [{
+      data: Object.values(credentialsByType),
+      backgroundColor: ['#4fc3f7', '#81c784', '#ffb74d', '#f06292', '#ba68c8'],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
+  const skillGrowthData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Skills Acquired',
+      data: [2, 5, 3, 7, 6, 8],
+      borderColor: '#4fc3f7',
+      backgroundColor: 'rgba(79, 195, 247, 0.1)',
+      fill: true,
+      tension: 0.4
+    }]
+  };
+
+  const marketDemandData = {
+    labels: ['Web Development', 'Data Science', 'Cybersecurity', 'AI/ML', 'Cloud Computing'],
+    datasets: [{
+      label: 'Market Demand Score',
+      data: [85, 92, 78, 96, 89],
+      backgroundColor: ['#4fc3f7', '#81c784', '#ffb74d', '#f06292', '#ba68c8']
+    }]
+  };
+
+  const calculateProfileCompleteness = () => {
+    let completeness = 0;
+    if (credentials.length > 0) completeness += 30;
+    if (credentials.length >= 3) completeness += 20;
+    if (credentials.some(c => c.credentialType === 'Certificate')) completeness += 25;
+    if (credentials.some(c => c.credentialType === 'Degree')) completeness += 25;
+    setProfileCompleteness(Math.min(completeness, 100));
+  };
+
+  const generateCareerInsights = () => {
+    const insights = [
+      {
+        title: "High Demand Skills",
+        description: "Your blockchain and web development credentials are in high demand",
+        type: "opportunity",
+        score: 92
+      },
+      {
+        title: "Skill Gap Analysis",
+        description: "Consider adding AI/ML certifications to boost your profile",
+        type: "suggestion", 
+        score: 78
+      },
+      {
+        title: "Industry Growth",
+        description: "Fintech sector shows 34% growth - perfect for your skillset",
+        type: "trend",
+        score: 87
+      }
+    ];
+    setCareerInsights(insights);
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const shareToSocial = (platform: string) => {
+    const text = `Just earned ${credentials.length} verified credentials on TrustChain! 🎓 #DecentralizedEducation #Blockchain`;
+    const urls = {
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`
+    };
+    window.open((urls as any)[platform], '_blank');
   };
 
   const loadCredentials = async () => {
@@ -102,6 +230,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
       const response = await trustChainService.getStudentCredentials(studentId);
       if (response.success && response.data) {
         setCredentials(response.data);
+        calculateProfileCompleteness();
+        generateCareerInsights();
       } else {
         setError('Failed to load credentials');
         setCredentials([]);
@@ -304,6 +434,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
               <Tabs 
                 value={tabValue} 
                 onChange={(_, newValue) => setTabValue(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
                 sx={{
                   '& .MuiTab-root': {
                     color: 'rgba(255, 255, 255, 0.7)',
@@ -324,13 +456,38 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
                 }}
               >
                 <Tab 
+                  icon={<Analytics />} 
+                  label="Dashboard" 
+                  iconPosition="start"
+                />
+                <Tab 
                   icon={<ViewList />} 
                   label="My Credentials" 
                   iconPosition="start"
                 />
                 <Tab 
+                  icon={<TrendingUp />} 
+                  label="Career Insights" 
+                  iconPosition="start"
+                />
+                <Tab 
+                  icon={<People />} 
+                  label="Learning Network" 
+                  iconPosition="start"
+                />
+                <Tab 
+                  icon={<Psychology />} 
+                  label="AI Recommendations" 
+                  iconPosition="start"
+                />
+                <Tab 
+                  icon={<Quiz />} 
+                  label="Skill Assessment" 
+                  iconPosition="start"
+                />
+                <Tab 
                   icon={<QrCode2 />} 
-                  label="Generate QR Code" 
+                  label="QR Codes" 
                   iconPosition="start"
                 />
               </Tabs>
@@ -349,8 +506,23 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
               minHeight: '500px'
             }}
           >
-        {/* Credentials List Tab */}
+        {/* Enhanced Dashboard Tab */}
         <TabPanel value={tabValue} index={0}>
+          <Box sx={{ p: 3 }}>
+            <EnhancedDashboardContent
+              credentials={credentials}
+              profileCompleteness={profileCompleteness}
+              credentialChartData={credentialChartData}
+              skillGrowthData={skillGrowthData}
+              marketDemandData={marketDemandData}
+              careerInsights={careerInsights}
+              onShareToSocial={shareToSocial}
+            />
+          </Box>
+        </TabPanel>
+
+        {/* Credentials List Tab */}
+        <TabPanel value={tabValue} index={1}>
           <Box sx={{ p: 3 }}>
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -434,47 +606,89 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ principal, identity
           </Box>
         </TabPanel>
 
-        {/* QR Generator Tab */}
-        <TabPanel value={tabValue} index={1}>
+        {/* Career Insights Tab */}
+        <TabPanel value={tabValue} index={2}>
           <Box sx={{ p: 3 }}>
-            <CredentialQRGenerator 
-              credentialId={selectedCredentialForQR}
+            <CareerInsights 
+              credentials={credentials}
+              currentUser={{ id: studentId, name: 'Student' }}
             />
-            
-            {credentials.length > 0 && (
-              <Paper 
-                elevation={0}
-                sx={{ 
-                  background: 'rgba(255, 255, 255, 0.1)', 
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 3,
-                  p: 3,
-                  mt: 3,
-                  color: 'white'
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Quick Select
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
-                  Select one of your credentials to generate a QR code:
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {credentials.map((credential) => (
-                    <Chip
-                      key={credential.id}
-                      label={`${credential.title} (${credential.institution})`}
-                      onClick={() => setSelectedCredentialForQR(credential.id)}
-                      color={selectedCredentialForQR === credential.id ? 'primary' : 'default'}
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': { opacity: 0.8 }
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Paper>
-            )}
+          </Box>
+        </TabPanel>
+
+        {/* Learning Network Tab */}
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ p: 3 }}>
+            <SocialLearning 
+              currentUser={{ id: studentId, name: 'Student' }}
+              credentials={credentials}
+            />
+          </Box>
+        </TabPanel>
+
+        {/* AI Learning Recommendations Tab */}
+        <TabPanel value={tabValue} index={4}>
+          <Box sx={{ p: 3 }}>
+            <SmartLearningRecommendations 
+              credentials={credentials}
+              currentUser={{ id: studentId, name: 'Student' }}
+            />
+          </Box>
+        </TabPanel>
+
+        {/* Skill Assessment Tab */}
+        <TabPanel value={tabValue} index={5}>
+          <Box sx={{ p: 3 }}>
+            <SkillAssessment 
+              currentUser={{ id: studentId, name: 'Student' }}
+              credentials={credentials}
+            />
+          </Box>
+        </TabPanel>
+
+        {/* QR Codes Tab */}
+        <TabPanel value={tabValue} index={6}>
+          <Box sx={{ p: 3 }}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              {selectedCredentialForQR ? (
+                <CredentialQRGenerator 
+                  credentialId={selectedCredentialForQR} 
+                  onClose={() => setSelectedCredentialForQR(null)} 
+                />
+              ) : (
+                <>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <QrCode2 />
+                    Generate QR Codes
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
+                    Select one of your credentials to generate a QR code:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {credentials.map((credential) => (
+                      <Chip
+                        key={credential.id}
+                        label={`${credential.title} (${credential.institution})`}
+                        onClick={() => setSelectedCredentialForQR(credential.id)}
+                        color={selectedCredentialForQR === credential.id ? 'primary' : 'default'}
+                        sx={{ 
+                          cursor: 'pointer',
+                          '&:hover': { opacity: 0.8 }
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Paper>
           </Box>
         </TabPanel>
       </Paper>
