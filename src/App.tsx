@@ -43,6 +43,9 @@ import {
   MobileLayout,
   EnhancedStudentDashboard
 } from './components';
+import PlaygroundDashboard from './components/PlaygroundDashboard';
+import UniversalDashboard from './components/UniversalDashboard';
+import UniversalDemo from './components/UniversalDemo';
 import pwaService from './services/pwa';
 import PerformanceMonitorService from './services/performanceMonitor';
 import { RealtimeProvider } from './contexts/RealtimeContext';
@@ -522,10 +525,52 @@ function App() {
           
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/universal" element={
+              <UniversalDashboard
+                organization={{
+                  id: 'universal-demo',
+                  name: 'Universal Platform',
+                  type: 'corporation',
+                  industry: 'Technology',
+                  verified: true,
+                  trustScore: 95,
+                  contact: {
+                    email: 'contact@universal.trustchain.io',
+                    phone: '+1 (555) 123-4567',
+                    website: 'https://universal.trustchain.io',
+                    address: '123 Innovation Drive, Tech City, TC 12345'
+                  },
+                  settings: {
+                    allowCrossVerification: true,
+                    publicProfile: true,
+                    apiAccess: true,
+                    webhookUrl: 'https://universal.trustchain.io/webhook'
+                  },
+                  subscription: {
+                    plan: 'professional',
+                    maxTrustBoards: 100,
+                    maxRecords: 10000,
+                    maxVerifications: 50000,
+                    customBranding: true
+                  },
+                  createdAt: Date.now() - 365 * 24 * 60 * 60 * 1000,
+                  lastActive: Date.now()
+                }}
+                credentials={[]}
+                profileCompleteness={85}
+                credentialChartData={{}}
+                skillGrowthData={{}}
+                marketDemandData={{}}
+                careerInsights={[]}
+                onShareToSocial={(platform: string) => console.log(`Sharing to ${platform}`)}
+              />
+            } />
+            <Route path="/universal-demo" element={<UniversalDemo />} />
             <Route path="/student" element={<StudentDashboard principal={principal} identity={identity} />} />
             <Route path="/institution" element={<InstitutionDashboard principal={principal} identity={identity} />} />
             <Route path="/verify" element={<VerifyCredential />} />
             <Route path="/realtime" element={<RealtimeDashboard />} />
+            <Route path="/playground" element={<PlaygroundDashboard />} />
           </Routes>
         </Box>
       )}

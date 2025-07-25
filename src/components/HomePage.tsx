@@ -354,7 +354,7 @@ const HomePage: React.FC = () => {
                     animation: 'slideUp 1s ease-out 0.5s both'
                   }}
                 >
-                  The Future of 
+                  Universal 
                   <Box component="span" sx={{ 
                     background: 'linear-gradient(45deg, #4ECDC4, #45B7D1)',
                     WebkitBackgroundClip: 'text',
@@ -373,9 +373,20 @@ const HomePage: React.FC = () => {
                       animation: 'ripple 2s infinite'
                     }
                   }}>
-                    Academic Credentials
+                    Verification Infrastructure
                   </Box>
-                  is Here
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontSize: { xs: '1rem', md: '1.2rem' },
+                    fontWeight: 400,
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    mt: 2,
+                    fontStyle: 'italic'
+                  }}
+                >
+                  'Trust-as-a-Service' - Think 'Shopify for Trust'
                 </Typography>
               </Box>
 
@@ -393,9 +404,10 @@ const HomePage: React.FC = () => {
                   animation: 'slideUp 1s ease-out 1s both'
                 }}
               >
-                Revolutionary blockchain technology that makes credentials tamper-proof, 
-                instantly verifiable, and globally accessible. Join thousands of institutions 
-                already transforming education.
+                Enable any organization to leverage blockchain-based verification without 
+                needing to understand blockchain technology. From academic credentials to 
+                certifications, memberships, and beyond - create TrustBoards, deploy TrustGates, 
+                and build trust networks that scale.
               </Typography>
 
               {/* Enhanced Action Buttons */}
@@ -409,7 +421,7 @@ const HomePage: React.FC = () => {
                   variant="contained"
                   size="large"
                   startIcon={<RocketLaunchIcon />}
-                  onClick={() => navigate('/verify')}
+                  onClick={() => navigate('/universal')}
                   sx={{
                     fontSize: '1.2rem',
                     fontWeight: 700,
@@ -441,14 +453,14 @@ const HomePage: React.FC = () => {
                     }
                   }}
                 >
-                  Get Started
+                  Create TrustBoard
                 </Button>
 
                 <Button
                   variant="outlined"
                   size="large"
                   startIcon={<VerifiedIcon />}
-                  onClick={() => navigate('/verify')}
+                  onClick={() => navigate('/universal-demo')}
                   sx={{
                     fontSize: '1.2rem',
                     fontWeight: 600,
@@ -469,15 +481,15 @@ const HomePage: React.FC = () => {
                     }
                   }}
                 >
-                  Verify Now
+                  View Demo
                 </Button>
               </Stack>
 
               {/* Enhanced Stats Section */}
               <Grid container spacing={4} justifyContent="center" sx={{ animation: 'slideUp 1s ease-out 2s both' }}>
                 {[
-                  { icon: SecurityIcon, value: '10K+', label: 'Credentials Issued', color: '#4ECDC4' },
-                  { icon: AccountBalanceIcon, value: '500+', label: 'Institutions', color: '#96CEB4' },
+                  { icon: SecurityIcon, value: '25K+', label: 'TrustBoards Created', color: '#4ECDC4' },
+                  { icon: AccountBalanceIcon, value: '1.2K+', label: 'Organizations', color: '#96CEB4' },
                   { icon: SpeedIcon, value: '99.9%', label: 'Uptime', color: '#FFEAA7' }
                 ].map((stat, index) => (
                   <Grid item xs={12} sm={4} key={index}>
@@ -582,50 +594,50 @@ const HomePage: React.FC = () => {
                 animation: 'slideUp 1s ease-out 0.3s both'
               }}
             >
-              Experience the next generation of credential verification with cutting-edge blockchain technology
+              Experience universal verification infrastructure that makes trust simple, scalable, and secure
             </Typography>
 
             <Grid container spacing={4}>
               {[
                 {
                   icon: SecurityIcon,
-                  title: 'Blockchain Security',
-                  description: 'Immutable credentials stored on Internet Computer blockchain',
+                  title: 'TrustBoards',
+                  description: 'Digital filing cabinets for organizing and managing verifiable credentials',
                   color: '#FF6B6B',
                   delay: '0s'
                 },
                 {
                   icon: SpeedIcon,
-                  title: 'Instant Verification',
-                  description: 'Verify credentials in seconds with QR codes or credential IDs',
+                  title: 'TrustGates',
+                  description: 'Verification endpoints that validate credentials in real-time',
                   color: '#4ECDC4',
                   delay: '0.2s'
                 },
                 {
                   icon: QrCodeIcon,
-                  title: 'QR Code Integration',
-                  description: 'Generate and scan QR codes for seamless verification',
+                  title: 'TrustBridge',
+                  description: 'Cross-verification network enabling trust between organizations',
                   color: '#45B7D1',
                   delay: '0.4s'
                 },
                 {
                   icon: DiamondIcon,
-                  title: 'NFT Badges',
-                  description: 'Convert credentials to collectible NFT achievement badges',
+                  title: 'Universal Support',
+                  description: 'From certificates to memberships - verify anything, anywhere',
                   color: '#96CEB4',
                   delay: '0.6s'
                 },
                 {
                   icon: PublicIcon,
-                  title: 'Global Access',
-                  description: 'Access your credentials anywhere in the world, anytime',
+                  title: 'No-Code Platform',
+                  description: 'Deploy verification systems without technical expertise',
                   color: '#FFEAA7',
                   delay: '0.8s'
                 },
                 {
                   icon: AutoAwesomeIcon,
-                  title: 'Decentralized',
-                  description: 'No single point of failure or central authority control',
+                  title: 'Blockchain Powered',
+                  description: 'Internet Computer blockchain ensures immutable security',
                   color: '#DDA0DD',
                   delay: '1s'
                 }
@@ -770,8 +782,8 @@ const HomePage: React.FC = () => {
                   fontSize: { xs: '1.1rem', md: '1.3rem' }
                 }}
               >
-                Join thousands of institutions and students already using TrustChain 
-                for secure credential management.
+                Join thousands of organizations already using TrustChain's 
+                Universal Verification Infrastructure.
               </Typography>
 
               <Stack 
@@ -783,7 +795,7 @@ const HomePage: React.FC = () => {
                   variant="contained"
                   size="large"
                   startIcon={<VerifiedIcon />}
-                  onClick={() => navigate('/verify')}
+                  onClick={() => navigate('/universal')}
                   sx={{
                     fontSize: '1.2rem',
                     fontWeight: 700,
@@ -799,14 +811,14 @@ const HomePage: React.FC = () => {
                     }
                   }}
                 >
-                  Verify a Credential Now
+                  Build Trust Infrastructure
                 </Button>
 
                 <Button
                   variant="outlined"
                   size="large"
                   startIcon={<FlareIcon />}
-                  onClick={() => navigate('/student')}
+                  onClick={() => navigate('/universal-demo')}
                   sx={{
                     fontSize: '1.2rem',
                     fontWeight: 600,
@@ -827,7 +839,32 @@ const HomePage: React.FC = () => {
                     }
                   }}
                 >
-                  Explore Features
+                  View Live Demo
+                </Button>
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<RocketLaunchIcon />}
+                  onClick={() => navigate('/playground')}
+                  sx={{
+                    fontSize: '1.2rem',
+                    fontWeight: 600,
+                    px: 5,
+                    py: 2,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: 3,
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                      boxShadow: '0 15px 40px rgba(102, 126, 234, 0.6)',
+                    }
+                  }}
+                >
+                  🌐 Mainnet Playground
                 </Button>
               </Stack>
             </Paper>

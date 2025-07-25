@@ -14,6 +14,7 @@ const Navigation: React.FC = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home, color: '#4ECDC4' },
+    { path: '/universal', label: 'Universal', icon: VerifiedUser, color: '#FF6B6B' },
     { path: '/student', label: 'Student', icon: School, color: '#45B7D1' },
     { path: '/institution', label: 'Institution', icon: Business, color: '#8A2BE2' },
     { path: '/verify', label: 'Verify', icon: VerifiedUser, color: '#00FF7F' }
