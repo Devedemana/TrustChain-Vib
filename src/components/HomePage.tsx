@@ -460,6 +460,34 @@ const HomePage: React.FC = () => {
                   variant="outlined"
                   size="large"
                   startIcon={<VerifiedIcon />}
+                  onClick={() => navigate('/universal-new')}
+                  sx={{
+                    fontSize: '1.2rem',
+                    fontWeight: 600,
+                    px: 4,
+                    py: 2,
+                    color: '#7b1fa2',
+                    borderColor: '#7b1fa2',
+                    borderWidth: 2,
+                    borderRadius: 3,
+                    backdropFilter: 'blur(10px)',
+                    background: 'rgba(123, 31, 162, 0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      borderColor: '#7b1fa2',
+                      background: 'rgba(123, 31, 162, 0.2)',
+                      boxShadow: '0 10px 30px rgba(123, 31, 162, 0.3)',
+                    }
+                  }}
+                >
+                  🌉 TrustBridges
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<VerifiedIcon />}
                   onClick={() => navigate('/universal-demo')}
                   sx={{
                     fontSize: '1.2rem',

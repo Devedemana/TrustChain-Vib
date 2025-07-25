@@ -43,6 +43,7 @@ import {
   MobileLayout,
   EnhancedStudentDashboard
 } from './components';
+import { UniversalTrustDashboard } from './components/UniversalTrustDashboard';
 import PlaygroundDashboard from './components/PlaygroundDashboard';
 import UniversalDashboard from './components/UniversalDashboard';
 import UniversalDemo from './components/UniversalDemo';
@@ -525,6 +526,7 @@ function App() {
           
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/universal-new" element={<UniversalTrustDashboard />} />
             <Route path="/universal" element={
               <UniversalDashboard
                 organization={{

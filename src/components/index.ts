@@ -19,3 +19,6 @@ export { default as CareerInsights } from './CareerInsights';
 export { default as SocialLearning } from './SocialLearning';
 export { default as SmartLearningRecommendations } from './SmartLearningRecommendations';
 export { default as SkillAssessment } from './SkillAssessment';
+export { TrustBridgesPage } from './TrustBridgesPage';
+export { ProductionBackendDemo } from './ProductionBackendDemo';
+export { UniversalTrustDashboard } from './UniversalTrustDashboard';
