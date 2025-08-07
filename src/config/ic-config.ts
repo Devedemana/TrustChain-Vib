@@ -5,7 +5,7 @@ export const IC_CONFIG = {
   HOST: process.env.REACT_APP_IC_HOST || 'http://127.0.0.1:4943', // Local replica or IC mainnet
   
   // Canister ID with proper fallback for development
-  CANISTER_ID: process.env.REACT_APP_CANISTER_ID || 'tneh2-tiaaa-aaaaa-qaktq-cai', // Your new IC Ninja canister ID
+  CANISTER_ID: process.env.REACT_APP_CANISTER_ID || 'emnyw-syaaa-aaaaa-qajoq-cai', // Your new IC Ninja canister ID
   
   // Internet Identity configuration
   INTERNET_IDENTITY_URL: 'https://identity.ic0.app',

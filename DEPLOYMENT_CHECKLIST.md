@@ -83,8 +83,8 @@ Canister ID: rdmx6-jaaaa-aaaaa-aaadq-cai
 Backend URL: https://rdmx6-jaaaa-aaaaa-aaadq-cai.ic0.app
 
 Deployed trustchain_frontend canister  
-Canister ID: tneh2-tiaaa-aaaaa-qaktq-cai
-Frontend URL: https://tneh2-tiaaa-aaaaa-qaktq-cai.ic0.app
+Canister ID: emnyw-syaaa-aaaaa-qajoq-cai
+Frontend URL: https://emnyw-syaaa-aaaaa-qajoq-cai.ic0.app
 ```
 
 ## 🌐 Post-Deployment

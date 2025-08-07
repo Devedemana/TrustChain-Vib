@@ -115,7 +115,7 @@ module.exports = {
       'process.env.NODE_ENV': JSON.stringify('development'),
       'process.env.DFX_NETWORK': JSON.stringify(process.env.DFX_NETWORK || 'local'),
       'process.env.CANISTER_ID_INTERNET_IDENTITY': JSON.stringify(process.env.CANISTER_ID_INTERNET_IDENTITY || 'rdmx6-jaaaa-aaaah-qacaa-cai'),
-      'process.env.CANISTER_ID_TRUSTCHAIN_BACKEND': JSON.stringify(process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'tneh2-tiaaa-aaaaa-qaktq-cai'),
+      'process.env.CANISTER_ID_TRUSTCHAIN_BACKEND': JSON.stringify(process.env.CANISTER_ID_TRUSTCHAIN_BACKEND || 'emnyw-syaaa-aaaaa-qajoq-cai'),
       'process.env.REACT_APP_ENV': JSON.stringify('development'),
       'process.env.REACT_APP_USE_MOCK_DATA': JSON.stringify('true'),
       'process.env.REACT_APP_IC_HOST': JSON.stringify('http://127.0.0.1:4943'),

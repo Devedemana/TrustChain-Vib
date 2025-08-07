@@ -2,16 +2,16 @@
 
 ## 1. System Information Check
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai getSystemInfo
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai getSystemInfo
 ```
 
 ## 2. Initialize Test Data (First Time Setup)
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai initializeTestData
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai initializeTestData
 
 ## 3. Create TrustBoard
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai createTrustBoard '(
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai createTrustBoard '(
   record {
     id = "healthcare_licenses_test";
     name = "Healthcare Professional Licenses - Test";
@@ -52,7 +52,7 @@ dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai createTrustBoard '(
 
 ## 👨‍⚕️ Step 4: Add a Healthcare Record
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai addRecord '(
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai addRecord '(
   "healthcare_licenses_test",
   record {
     id = "dr_johnson_2025";
@@ -76,7 +76,7 @@ dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai addRecord '(
 
 ## 🔍 Step 5: Test TrustGate Verification
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai verifyTrustGate '(
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai verifyTrustGate '(
   record {
     boardId = "healthcare_licenses_test";
     searchQuery = "MD789012";
@@ -91,22 +91,22 @@ dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai verifyTrustGate '(
 
 ## 📊 Step 6: Get Analytics
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai getUniversalAnalytics '("health_org_001")'
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai getUniversalAnalytics '("health_org_001")'
 ```
 
 ## 📋 Step 7: List TrustBoards
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai listTrustBoards '("health_org_001")'
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai listTrustBoards '("health_org_001")'
 ```
 
 ## 🔍 Step 8: Search Records
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai searchRecords '("healthcare_licenses_test")'
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai searchRecords '("healthcare_licenses_test")'
 ```
 
 ## 📈 Step 9: Check System Status Again
 ```bash
-dfx canister --network ic call tneh2-tiaaa-aaaaa-qaktq-cai getSystemInfo
+dfx canister --network ic call emnyw-syaaa-aaaaa-qajoq-cai getSystemInfo
 ```
 **Expected Result**: Should show increased counts for TrustBoards, Records, and Organizations
 
