@@ -1,14 +1,14 @@
 // Production IC Configuration for Deployed Backend
 export const IC_PRODUCTION_CONFIG = {
   // Your deployed canister on IC mainnet
-  UNIVERSAL_BACKEND_CANISTER_ID: 'engfj-myaaa-aaaac-qaita-cai',
+  UNIVERSAL_BACKEND_CANISTER_ID: 'tneh2-tiaaa-aaaaa-qaktq-cai',
   
   // IC mainnet configuration
   IC_HOST: 'https://ic0.app',
   IC_AGENT_HOST: 'https://ic0.app',
   
   // Backend URL for direct access
-  BACKEND_URL: 'https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp0.io/?id=engfj-myaaa-aaaac-qaita-cai',
+  BACKEND_URL: 'https://a4gq6-oaaaa-aaaab-qaa4q-cai.icp0.io/?id=tneh2-tiaaa-aaaaa-qaktq-cai',
   
   // Network configuration
   NETWORK: 'ic' as const,
@@ -112,8 +112,8 @@ export const getUniversalActor = async (): Promise<UniversalTrustBoardActor> => 
 
 // Production deployment info
 export const DEPLOYMENT_INFO = {
-  DEPLOYED_AT: '2025-07-25',
-  CANISTER_ID: 'engfj-myaaa-aaaac-qaita-cai',
+  DEPLOYED_AT: '2025-08-06',
+  CANISTER_ID: 'tneh2-tiaaa-aaaaa-qaktq-cai',
   VERSION: '1.0.0',
   NETWORK: 'Internet Computer Mainnet',
   STATUS: 'LIVE',

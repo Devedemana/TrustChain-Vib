@@ -35,13 +35,10 @@ import { Identity } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { 
   HomePage, 
-  StudentDashboard, 
-  InstitutionDashboard, 
   VerifyCredential, 
   Navigation,
   LogoutButton,
-  MobileLayout,
-  EnhancedStudentDashboard
+  MobileLayout
 } from './components';
 import { UniversalTrustDashboard } from './components/UniversalTrustDashboard';
 import PlaygroundDashboard from './components/PlaygroundDashboard';
@@ -384,15 +381,163 @@ function App() {
   const renderMainContent = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <StudentDashboard principal={principal} identity={identity} />;
+        return <UniversalDashboard
+          organization={{
+            id: 'universal-demo',
+            name: 'Universal Platform',
+            type: 'corporation',
+            industry: 'Technology',
+            verified: true,
+            trustScore: 95,
+            contact: {
+              email: 'contact@universal.trustchain.io',
+              phone: '+1 (555) 123-4567',
+              website: 'https://universal.trustchain.io',
+              address: '123 Innovation Drive, Tech City, TC 12345'
+            },
+            settings: {
+              allowCrossVerification: true,
+              publicProfile: true,
+              apiAccess: true,
+              webhookUrl: 'https://universal.trustchain.io/webhook'
+            },
+            subscription: {
+              plan: 'professional',
+              maxTrustBoards: 100,
+              maxRecords: 10000,
+              maxVerifications: 50000,
+              customBranding: true
+            },
+            createdAt: Date.now() - 365 * 24 * 60 * 60 * 1000,
+            lastActive: Date.now()
+          }}
+          credentials={[]}
+          profileCompleteness={85}
+          credentialChartData={{}}
+          skillGrowthData={{}}
+          marketDemandData={{}}
+          careerInsights={[]}
+          onShareToSocial={(platform: string) => console.log(`Sharing to ${platform}`)}
+        />;
       case 'credentials':
-        return <StudentDashboard principal={principal} identity={identity} />;
+        return <UniversalDashboard
+          organization={{
+            id: 'universal-demo',
+            name: 'Universal Platform',
+            type: 'corporation',
+            industry: 'Technology',
+            verified: true,
+            trustScore: 95,
+            contact: {
+              email: 'contact@universal.trustchain.io',
+              phone: '+1 (555) 123-4567',
+              website: 'https://universal.trustchain.io',
+              address: '123 Innovation Drive, Tech City, TC 12345'
+            },
+            settings: {
+              allowCrossVerification: true,
+              publicProfile: true,
+              apiAccess: true,
+              webhookUrl: 'https://universal.trustchain.io/webhook'
+            },
+            subscription: {
+              plan: 'professional',
+              maxTrustBoards: 100,
+              maxRecords: 10000,
+              maxVerifications: 50000,
+              customBranding: true
+            },
+            createdAt: Date.now() - 365 * 24 * 60 * 60 * 1000,
+            lastActive: Date.now()
+          }}
+          credentials={[]}
+          profileCompleteness={85}
+          credentialChartData={{}}
+          skillGrowthData={{}}
+          marketDemandData={{}}
+          careerInsights={[]}
+          onShareToSocial={(platform: string) => console.log(`Sharing to ${platform}`)}
+        />;
       case 'verify':
         return <VerifyCredential />;
       case 'analytics':
-        return <StudentDashboard principal={principal} identity={identity} />;
+        return <UniversalDashboard
+          organization={{
+            id: 'universal-demo',
+            name: 'Universal Platform',
+            type: 'corporation',
+            industry: 'Technology',
+            verified: true,
+            trustScore: 95,
+            contact: {
+              email: 'contact@universal.trustchain.io',
+              phone: '+1 (555) 123-4567',
+              website: 'https://universal.trustchain.io',
+              address: '123 Innovation Drive, Tech City, TC 12345'
+            },
+            settings: {
+              allowCrossVerification: true,
+              publicProfile: true,
+              apiAccess: true,
+              webhookUrl: 'https://universal.trustchain.io/webhook'
+            },
+            subscription: {
+              plan: 'professional',
+              maxTrustBoards: 100,
+              maxRecords: 10000,
+              maxVerifications: 50000,
+              customBranding: true
+            },
+            createdAt: Date.now() - 365 * 24 * 60 * 60 * 1000,
+            lastActive: Date.now()
+          }}
+          credentials={[]}
+          profileCompleteness={85}
+          credentialChartData={{}}
+          skillGrowthData={{}}
+          marketDemandData={{}}
+          careerInsights={[]}
+          onShareToSocial={(platform: string) => console.log(`Sharing to ${platform}`)}
+        />;
       default:
-        return <StudentDashboard principal={principal} identity={identity} />;
+        return <UniversalDashboard
+          organization={{
+            id: 'universal-demo',
+            name: 'Universal Platform',
+            type: 'corporation',
+            industry: 'Technology',
+            verified: true,
+            trustScore: 95,
+            contact: {
+              email: 'contact@universal.trustchain.io',
+              phone: '+1 (555) 123-4567',
+              website: 'https://universal.trustchain.io',
+              address: '123 Innovation Drive, Tech City, TC 12345'
+            },
+            settings: {
+              allowCrossVerification: true,
+              publicProfile: true,
+              apiAccess: true,
+              webhookUrl: 'https://universal.trustchain.io/webhook'
+            },
+            subscription: {
+              plan: 'professional',
+              maxTrustBoards: 100,
+              maxRecords: 10000,
+              maxVerifications: 50000,
+              customBranding: true
+            },
+            createdAt: Date.now() - 365 * 24 * 60 * 60 * 1000,
+            lastActive: Date.now()
+          }}
+          credentials={[]}
+          profileCompleteness={85}
+          credentialChartData={{}}
+          skillGrowthData={{}}
+          marketDemandData={{}}
+          careerInsights={[]}
+          onShareToSocial={(platform: string) => console.log(`Sharing to ${platform}`)}
+        />;
     }
   };
 
@@ -568,8 +713,6 @@ function App() {
               />
             } />
             <Route path="/universal-demo" element={<UniversalDemo />} />
-            <Route path="/student" element={<StudentDashboard principal={principal} identity={identity} />} />
-            <Route path="/institution" element={<InstitutionDashboard principal={principal} identity={identity} />} />
             <Route path="/verify" element={<VerifyCredential />} />
             <Route path="/realtime" element={<RealtimeDashboard />} />
             <Route path="/playground" element={<PlaygroundDashboard />} />

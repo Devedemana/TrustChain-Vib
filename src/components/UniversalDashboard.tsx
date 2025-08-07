@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -76,7 +77,8 @@ import {
   AutoGraph,
   CheckCircle,
   Cancel,
-  Upload
+  Upload,
+  Download as DownloadIcon
 } from '@mui/icons-material';
 import { TrustBoardSchema, Organization, UniversalAnalytics } from '../types/universal';
 import { UniversalTrustService } from '../services/universalTrust';
@@ -112,8 +114,16 @@ const UniversalDashboard: React.FC<UniversalDashboardProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const location = useLocation();
   
-  const [activeTab, setActiveTab] = useState(0);
+  // Read tab from URL parameters
+  const getInitialTab = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    return tabParam ? parseInt(tabParam, 10) : 0;
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [trustBoards, setTrustBoards] = useState<TrustBoardSchema[]>([]);
   const [analytics, setAnalytics] = useState<UniversalAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -145,7 +155,7 @@ const UniversalDashboard: React.FC<UniversalDashboardProps> = ({
   const universalService = UniversalTrustService.getInstance();
 
   const tabs = [
-    { label: 'Command Center', icon: <DashboardIcon />, color: '#FF6B6B' },
+    // { label: 'Command Center', icon: <DashboardIcon />, color: '#FF6B6B' },
     { label: 'TrustBoards', icon: <TableIcon />, color: '#4ECDC4' },
     { label: 'TrustGates', icon: <VerifiedIcon />, color: '#45B7D1' },
     { label: 'TrustBridge', icon: <Integration />, color: '#F7DC6F' },
@@ -214,6 +224,14 @@ const UniversalDashboard: React.FC<UniversalDashboardProps> = ({
     return () => clearTimeout(timer);
   }, [organization.id]);
 
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    const tabIndex = tabParam ? parseInt(tabParam, 10) : 0;
+    setActiveTab(tabIndex);
+  }, [location.search]);
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {
@@ -252,6 +270,178 @@ const UniversalDashboard: React.FC<UniversalDashboardProps> = ({
   const handleManageBoardData = (board: TrustBoardSchema) => {
     setSelectedBoard(board);
     setBoardDataOpen(true);
+  };
+
+  const handleCsvDataUpload = async (event: React.ChangeEvent<HTMLInputElement>, boardId: string) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedBoard) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const csv = e.target?.result as string;
+        const lines = csv.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        const records = lines.slice(1).map((line, index) => {
+          const values = line.split(',').map(v => v.trim());
+          const data: any = {};
+          headers.forEach((header, i) => {
+            data[header] = values[i] || '';
+          });
+          
+          return {
+            boardId: boardId,
+            data,
+            submitter: organization.id,
+            submitterType: 'organization' as const,
+            verificationStatus: 'pending' as const,
+            verificationHash: '',
+            metadata: {
+              auditTrail: [{
+                id: `audit_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+                timestamp: Date.now(),
+                actor: organization.id,
+                action: 'record_created',
+                resourceType: 'record' as const,
+                resourceId: `record_${Date.now()}_${index}`,
+                outcome: 'success' as const,
+                details: 'CSV upload batch processing'
+              }]
+            }
+          };
+        });
+
+        // Process records in batches of 10
+        const batchSize = 10;
+        const results = [];
+        
+        for (let i = 0; i < records.length; i += batchSize) {
+          const batch = records.slice(i, i + batchSize);
+          const result = await universalService.batchAddRecords(boardId, batch);
+          
+          if (result.success && result.data) {
+            results.push(...result.data.successful);
+            console.log(`✅ Batch ${Math.floor(i/batchSize) + 1} uploaded successfully:`, result.data);
+          }
+        }
+
+        setCsvResults(results);
+        
+        // Update board record count
+        const updatedBoard = { ...selectedBoard, recordCount: (selectedBoard.recordCount || 0) + results.length };
+        setSelectedBoard(updatedBoard);
+        
+        // Update the boards list
+        setTrustBoards(prev => prev.map(b => b.id === boardId ? updatedBoard : b));
+        
+        alert(`Successfully uploaded ${results.length} records to ${selectedBoard.name}`);
+        
+        // Generate DFX commands for manual verification
+        console.log('🔧 DFX Commands for manual verification:');
+        console.log(`# Check board status:
+dfx canister call universal_backend getTrustBoard '("${boardId}")'
+
+# Search records:
+dfx canister call universal_backend searchRecords '("${boardId}")'
+
+# Get board analytics:
+dfx canister call universal_backend getUniversalAnalytics '("${organization.id}")'`);
+        
+      } catch (error) {
+        console.error('CSV upload error:', error);
+        alert('Error processing CSV file. Please check the format and try again.');
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const handleAddSingleRecord = async (boardId: string) => {
+    if (!selectedBoard) return;
+    
+    // Create a simple dialog for single record entry
+    const recordData = prompt(`Add a record to ${selectedBoard.name}:\n\nEnter data as JSON (e.g., {"name": "John Doe", "id": "12345"})`);
+    
+    if (recordData) {
+      try {
+        const data = JSON.parse(recordData);
+        const record = {
+          boardId: boardId,
+          data,
+          submitter: organization.id,
+          submitterType: 'organization' as const,
+          verificationStatus: 'verified' as const,
+          verificationHash: '',
+          metadata: {
+            auditTrail: [{
+              id: `audit_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+              timestamp: Date.now(),
+              actor: organization.id,
+              action: 'record_created',
+              resourceType: 'record' as const,
+              resourceId: `record_${Date.now()}`,
+              outcome: 'success' as const,
+              details: 'Manual entry via dashboard'
+            }]
+          }
+        };
+
+        const result = await universalService.addRecord(boardId, record);
+        
+        if (result.success && result.data) {
+          console.log('✅ Record added successfully:', result.data);
+          
+          // Update board record count
+          const updatedBoard = { ...selectedBoard, recordCount: (selectedBoard.recordCount || 0) + 1 };
+          setSelectedBoard(updatedBoard);
+          setTrustBoards(prev => prev.map(b => b.id === boardId ? updatedBoard : b));
+          
+          alert('Record added successfully!');
+          
+          // Generate DFX command for manual verification
+          console.log('🔧 DFX Command for manual verification:');
+          console.log(`dfx canister call universal_backend addRecord '("${boardId}", record {
+            id = "${result.data.id}";
+            data = ${JSON.stringify(data).replace(/"/g, '\\"')};
+            submitter = "${organization.id}";
+            status = "verified";
+            isPrivate = false;
+            timestamp = ${Date.now()};
+          })'`);
+        } else {
+          alert(`Error adding record: ${result.error}`);
+        }
+      } catch (error) {
+        alert('Invalid JSON format. Please check your input.');
+      }
+    }
+  };
+
+  const downloadBoardTemplate = (board: TrustBoardSchema) => {
+    // Generate CSV template based on board fields
+    const headers = board.fields.map(field => field.name).join(',');
+    const sampleRow = board.fields.map(field => {
+      switch (field.type) {
+        case 'text': return 'Sample Text';
+        case 'number': return '123';
+        case 'date': return '2024-01-01';
+        case 'boolean': return 'true';
+        case 'email': return 'sample@example.com';
+        case 'url': return 'https://example.com';
+        default: return 'Sample Value';
+      }
+    }).join(',');
+    
+    const csvContent = `${headers}\n${sampleRow}\n`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${board.name.replace(/[^a-zA-Z0-9]/g, '_')}_template.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const handleRefreshData = () => {
@@ -2875,79 +3065,7 @@ dfx canister call universal_backend verifyTrustGate '(
             </Paper>
           </Fade>
 
-          {/* Enhanced Navigation Tabs */}
-          <Fade in timeout={1200}>
-            <Paper 
-              elevation={0}
-              sx={{ 
-                ...glassmorphismStyles.primaryGlass,
-                borderRadius: '16px 16px 0 0',
-                borderBottom: 'none'
-              }}
-            >
-              <Tabs 
-                value={activeTab} 
-                onChange={(e, newValue) => setActiveTab(newValue)}
-                variant={isMobile ? 'scrollable' : 'standard'}
-                scrollButtons="auto"
-                sx={{
-                  '& .MuiTab-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    textTransform: 'none',
-                    minHeight: 60,
-                    '&.Mui-selected': {
-                      color: '#8A2BE2',
-                      background: 'rgba(138, 43, 226, 0.15)',
-                      backdropFilter: 'blur(10px)'
-                    },
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      backdropFilter: 'blur(15px)'
-                    }
-                  },
-                  '& .MuiTabs-indicator': {
-                    background: 'linear-gradient(45deg, #8A2BE2, #1E90FF)',
-                    height: 3,
-                    borderRadius: '3px 3px 0 0'
-                  }
-                }}
-              >
-                {tabs.map((tab, index) => (
-                  <Tab
-                    key={index}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {tab.icon}
-                        <Box>
-                          <Typography variant="body1" fontWeight="bold" sx={{ ...glassmorphismStyles.primaryText }}>
-                            {tab.label}
-                          </Typography>
-                          <Typography variant="caption" sx={{ ...glassmorphismStyles.subtleText }}>
-                            {index === 0 && 'Overview'}
-                            {index === 1 && 'Digital Tables'}
-                            {index === 2 && 'Yes/No Verification'}
-                            {index === 3 && 'Cross-Verification'}
-                            {index === 4 && 'Insights & Reports'}
-                            {index === 5 && 'Embed & Share'}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    }
-                    iconPosition="start"
-                    sx={{ 
-                      minHeight: 72,
-                      alignItems: 'flex-start',
-                      justifyContent: 'flex-start',
-                      textAlign: 'left'
-                    }}
-                  />
-                ))}
-              </Tabs>
-            </Paper>
-          </Fade>
-
+          {/* Content controlled by Navigation header */}
           <Box sx={{ position: 'relative' }}>
             <Fade in={true} timeout={600} key={activeTab}>
               <Box>
@@ -3138,9 +3256,46 @@ dfx canister call universal_backend verifyTrustGate '(
         <DialogContent sx={{ p: 3 }}>
           {selectedBoard && (
             <Box>
-              <Alert severity="info" sx={{ mb: 3 }}>
-                Data management interface for {selectedBoard.name}. Upload CSV files, add records, and manage data.
+              <Alert severity="info" sx={{ mb: 3, color: 'white', bgcolor: 'rgba(30, 144, 255, 0.1)' }}>
+                <Typography variant="body2" fontWeight="bold" gutterBottom>
+                  📊 Real IC Backend Integration
+                </Typography>
+                <Typography variant="body2">
+                  Data operations connect to your deployed Internet Computer backend. 
+                  Check the browser console for DFX commands to manually verify operations.
+                </Typography>
               </Alert>
+              
+              <Typography variant="h6" gutterBottom sx={{ color: 'white', mb: 3 }}>
+                Board Information
+              </Typography>
+              
+              <Grid container spacing={2} sx={{ mb: 4 }}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Board ID: {selectedBoard.id}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Records: {selectedBoard.recordCount || 0}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Fields: {selectedBoard.fields.length}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Status: {selectedBoard.isActive ? 'Active' : 'Inactive'}
+                  </Typography>
+                </Grid>
+              </Grid>
+
+              <Typography variant="h6" gutterBottom sx={{ color: 'white', mb: 2 }}>
+                Data Operations
+              </Typography>
               
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
@@ -3148,28 +3303,67 @@ dfx canister call universal_backend verifyTrustGate '(
                     background: 'rgba(255, 255, 255, 0.05)', 
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(138, 43, 226, 0.2)',
-                    color: 'white'
+                    color: 'white',
+                    height: '280px'
                   }}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
-                        Upload Data
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <CloudUpload sx={{ color: '#8A2BE2' }} />
+                        <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                          Bulk Upload
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 3 }}>
+                        Upload multiple records via CSV file. Use the template to ensure proper formatting.
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
-                        Bulk upload records via CSV file
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Button 
+                          variant="outlined" 
+                          fullWidth
+                          startIcon={<DownloadIcon />}
+                          onClick={() => downloadBoardTemplate(selectedBoard)}
+                          sx={{
+                            borderColor: 'rgba(138, 43, 226, 0.5)',
+                            color: '#8A2BE2',
+                            mb: 2,
+                            '&:hover': {
+                              borderColor: '#8A2BE2',
+                              background: 'rgba(138, 43, 226, 0.1)'
+                            }
+                          }}
+                        >
+                          Download CSV Template
+                        </Button>
+                        
+                        <input
+                          type="file"
+                          accept=".csv"
+                          onChange={(e) => handleCsvDataUpload(e, selectedBoard.id)}
+                          style={{ display: 'none' }}
+                          id={`csv-upload-${selectedBoard.id}`}
+                        />
+                        <label htmlFor={`csv-upload-${selectedBoard.id}`}>
+                          <Button 
+                            variant="contained" 
+                            fullWidth
+                            component="span"
+                            startIcon={<Upload />}
+                            sx={{
+                              background: 'linear-gradient(45deg, #8A2BE2, #1E90FF)',
+                              '&:hover': {
+                                background: 'linear-gradient(45deg, #1E90FF, #8A2BE2)'
+                              }
+                            }}
+                          >
+                            Upload CSV File
+                          </Button>
+                        </label>
+                      </Box>
+                      
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                        CSV should include headers matching your board fields.
                       </Typography>
-                      <Button 
-                        variant="contained" 
-                        fullWidth
-                        startIcon={<CloudUpload />}
-                        sx={{
-                          background: 'linear-gradient(45deg, #8A2BE2, #1E90FF)',
-                          '&:hover': {
-                            background: 'linear-gradient(45deg, #1E90FF, #8A2BE2)'
-                          }
-                        }}
-                      >
-                        Upload CSV
-                      </Button>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -3179,19 +3373,57 @@ dfx canister call universal_backend verifyTrustGate '(
                     background: 'rgba(255, 255, 255, 0.05)', 
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(30, 144, 255, 0.2)',
-                    color: 'white'
+                    color: 'white',
+                    height: '280px'
                   }}>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
-                        Add Record
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <AddIcon sx={{ color: '#1E90FF' }} />
+                        <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                          Add Record
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 3 }}>
+                        Manually add a single record to this TrustBoard.
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
-                        Manually add a single record
-                      </Typography>
+                      
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
+                          Board Fields:
+                        </Typography>
+                        <Box sx={{ mb: 2 }}>
+                          {selectedBoard.fields.slice(0, 3).map((field, index) => (
+                            <Chip 
+                              key={index}
+                              label={`${field.name} (${field.type})`}
+                              size="small"
+                              sx={{
+                                mr: 1,
+                                mb: 1,
+                                bgcolor: 'rgba(30, 144, 255, 0.2)',
+                                color: 'white',
+                                border: '1px solid rgba(30, 144, 255, 0.3)'
+                              }}
+                            />
+                          ))}
+                          {selectedBoard.fields.length > 3 && (
+                            <Chip 
+                              label={`+${selectedBoard.fields.length - 3} more`}
+                              size="small"
+                              sx={{
+                                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                color: 'white'
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                      
                       <Button 
                         variant="contained" 
                         fullWidth
                         startIcon={<AddIcon />}
+                        onClick={() => handleAddSingleRecord(selectedBoard.id)}
                         sx={{
                           background: 'linear-gradient(45deg, #1E90FF, #8A2BE2)',
                           '&:hover': {
@@ -3199,44 +3431,138 @@ dfx canister call universal_backend verifyTrustGate '(
                           }
                         }}
                       >
-                        Add Record
+                        Add Single Record
                       </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.05)', 
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(50, 205, 50, 0.2)',
+                    color: 'white'
+                  }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <VerifiedIcon sx={{ color: '#32CD32' }} />
+                        <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                          Data Verification
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                        Test verification queries against your TrustBoard data.
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button 
+                          variant="outlined" 
+                          onClick={() => {
+                            setTrustGateOpen(true);
+                            setBoardDataOpen(false);
+                          }}
+                          sx={{
+                            borderColor: 'rgba(50, 205, 50, 0.5)',
+                            color: '#32CD32',
+                            '&:hover': {
+                              borderColor: '#32CD32',
+                              background: 'rgba(50, 205, 50, 0.1)'
+                            }
+                          }}
+                        >
+                          Test Verification
+                        </Button>
+                        <Button 
+                          variant="outlined"
+                          onClick={() => {
+                            const searchUrl = `${window.location.origin}/search?board=${selectedBoard.id}`;
+                            navigator.clipboard.writeText(searchUrl);
+                            alert('Search URL copied to clipboard!');
+                          }}
+                          sx={{
+                            borderColor: 'rgba(30, 144, 255, 0.5)',
+                            color: '#1E90FF',
+                            '&:hover': {
+                              borderColor: '#1E90FF',
+                              background: 'rgba(30, 144, 255, 0.1)'
+                            }
+                          }}
+                        >
+                          Copy Search URL
+                        </Button>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>
               </Grid>
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
-                <Button 
-                  variant="outlined"
-                  onClick={() => setBoardDataOpen(false)}
-                  sx={{
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    color: 'white',
-                    '&:hover': {
-                      borderColor: 'white',
-                      background: 'rgba(255, 255, 255, 0.1)'
-                    }
-                  }}
-                >
-                  Close
-                </Button>
-                <Button 
-                  variant="contained"
-                  onClick={() => handleShareToSocial('copy', selectedBoard.id)}
-                  sx={{
-                    background: 'linear-gradient(45deg, #8A2BE2, #1E90FF)',
-                    '&:hover': {
-                      background: 'linear-gradient(45deg, #1E90FF, #8A2BE2)'
-                    }
-                  }}
-                >
-                  Share Board
-                </Button>
-              </Box>
+              {csvResults.length > 0 && (
+                <Box sx={{ mt: 4 }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                    Upload Results
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {csvResults.slice(0, 6).map((result, index) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ 
+                          background: 'rgba(50, 205, 50, 0.1)',
+                          border: '1px solid rgba(50, 205, 50, 0.3)',
+                          color: 'white'
+                        }}>
+                          <CardContent sx={{ p: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <CheckCircle sx={{ color: '#32CD32', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" fontWeight="bold">
+                                Record {index + 1}
+                              </Typography>
+                            </Box>
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                              ID: {result.id?.substring(0, 8)}...
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  {csvResults.length > 6 && (
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 2, display: 'block' }}>
+                      Showing 6 of {csvResults.length} uploaded records
+                    </Typography>
+                  )}
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            variant="outlined"
+            onClick={() => setBoardDataOpen(false)}
+            sx={{
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              color: 'white',
+              '&:hover': {
+                borderColor: 'white',
+                background: 'rgba(255, 255, 255, 0.1)'
+              }
+            }}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="contained"
+            onClick={() => handleShareToSocial('copy', selectedBoard?.id)}
+            sx={{
+              background: 'linear-gradient(45deg, #8A2BE2, #1E90FF)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1E90FF, #8A2BE2)'
+              }
+            }}
+          >
+            Share Board
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

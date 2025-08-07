@@ -32,9 +32,11 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  Verified as VerifiedIcon,
+  ViewList as TrustBoardsIcon,
+  Security as TrustGatesIcon,
+  AccountTree as TrustBridgeIcon,
   Analytics as AnalyticsIcon,
+  Api as ApiIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   Search as SearchIcon,
@@ -77,17 +79,19 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const [refreshThreshold] = useState(100);
 
   const pages = [
-    { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { id: 'credentials', label: 'Credentials', icon: SchoolIcon },
-    { id: 'verify', label: 'Verify', icon: VerifiedIcon },
-    { id: 'analytics', label: 'Analytics', icon: AnalyticsIcon }
+    // { id: 'dashboard', label: 'Command Center', icon: DashboardIcon },
+    { id: 'trustboards', label: 'TrustBoards', icon: TrustBoardsIcon },
+    { id: 'trustgates', label: 'TrustGates', icon: TrustGatesIcon },
+    { id: 'trustbridge', label: 'TrustBridge', icon: TrustBridgeIcon },
+    { id: 'analytics', label: 'Analytics', icon: AnalyticsIcon },
+    { id: 'api', label: 'API & Widgets', icon: ApiIcon }
   ];
 
   const speedDialActions = [
-    { icon: <QrScannerIcon />, name: 'Scan QR', action: 'scan' },
-    { icon: <CameraIcon />, name: 'Take Photo', action: 'camera' },
-    { icon: <ShareIcon />, name: 'Share', action: 'share' },
-    { icon: <CloudSyncIcon />, name: 'Sync', action: 'sync' }
+    { icon: <AddIcon />, name: 'Create TrustBoard', action: 'create' },
+    { icon: <SearchIcon />, name: 'Verify Records', action: 'verify' },
+    { icon: <ShareIcon />, name: 'Share Board', action: 'share' },
+    { icon: <CloudSyncIcon />, name: 'Sync Data', action: 'sync' }
   ];
 
   // Swipe handlers for navigation
@@ -350,7 +354,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           </Avatar>
           <Typography variant="h6">TrustChain User</Typography>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            3 Active Credentials
+            5 Active TrustBoards
           </Typography>
         </Box>
 

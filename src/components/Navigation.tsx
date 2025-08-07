@@ -3,9 +3,13 @@ import { Button, Box, Chip } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
-  School, 
-  Business, 
-  VerifiedUser 
+  Dashboard,
+  ViewList,
+  Security,
+  AccountTree,
+  Analytics,
+  Api,
+  VerifiedUser
 } from '@mui/icons-material';
 
 const Navigation: React.FC = () => {
@@ -14,16 +18,19 @@ const Navigation: React.FC = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home, color: '#4ECDC4' },
-    { path: '/universal', label: 'Universal', icon: VerifiedUser, color: '#FF6B6B' },
-    { path: '/student', label: 'Student', icon: School, color: '#45B7D1' },
-    { path: '/institution', label: 'Institution', icon: Business, color: '#8A2BE2' },
-    { path: '/verify', label: 'Verify', icon: VerifiedUser, color: '#00FF7F' }
+    // { path: '/universal?tab=0', label: 'Command Center', icon: Dashboard, color: '#8A2BE2' },
+    { path: '/universal?tab=1', label: 'TrustBoards', icon: ViewList, color: '#FF6B6B' },
+    { path: '/universal?tab=2', label: 'TrustGates', icon: Security, color: '#45B7D1' },
+    { path: '/universal?tab=3', label: 'TrustBridge', icon: AccountTree, color: '#00CED1' },
+    { path: '/universal?tab=4', label: 'Analytics', icon: Analytics, color: '#32CD32' },
+    { path: '/universal?tab=5', label: 'API & Widgets', icon: Api, color: '#FF8C00' },
+    { path: '/verify', label: 'Verify', icon: VerifiedUser, color: '#FF1493' }
   ];
 
   return (
     <Box sx={{ 
       display: 'flex', 
-      gap: 2,
+      gap: 1.5,
       alignItems: 'center',
       p: 1,
       background: 'rgba(255, 255, 255, 0.05)',
@@ -33,7 +40,8 @@ const Navigation: React.FC = () => {
     }}>
       {navItems.map((item) => {
         const IconComponent = item.icon;
-        const isActive = location.pathname === item.path;
+        const isActive = location.pathname === item.path || 
+          (item.path.includes('?tab=') && location.pathname === '/universal' && location.search.includes(`tab=${item.path.split('tab=')[1]}`));
         
         return (
           <Button
@@ -43,10 +51,10 @@ const Navigation: React.FC = () => {
             sx={{
               color: isActive ? 'white' : 'rgba(255, 255, 255, 0.7)',
               fontWeight: isActive ? 700 : 500,
-              fontSize: '0.95rem',
+              fontSize: '0.85rem',
               textTransform: 'none',
-              px: 3,
-              py: 1.5,
+              px: 2,
+              py: 1.2,
               borderRadius: 2,
               position: 'relative',
               background: isActive 
@@ -90,11 +98,11 @@ const Navigation: React.FC = () => {
                 size="small"
                 sx={{
                   ml: 1,
-                  height: 20,
+                  height: 18,
                   background: 'rgba(255, 255, 255, 0.2)',
                   color: 'white',
-                  fontSize: '0.7rem',
-                  '& .MuiChip-label': { px: 1 }
+                  fontSize: '0.65rem',
+                  '& .MuiChip-label': { px: 0.5 }
                 }}
               />
             )}

@@ -110,7 +110,7 @@ const UniversalDashboard: React.FC<UniversalDashboardProps> = ({
   const universalService = UniversalTrustService.getInstance();
 
   const tabs = [
-    { label: 'Command Center', icon: <DashboardIcon />, color: '#FF6B6B' },
+    // { label: 'Command Center', icon: <DashboardIcon />, color: '#FF6B6B' },
     { label: 'TrustBoards', icon: <TableIcon />, color: '#4ECDC4' },
     { label: 'TrustGates', icon: <VerifiedIcon />, color: '#45B7D1' },
     { label: 'TrustBridge', icon: <Integration />, color: '#F7DC6F' },
